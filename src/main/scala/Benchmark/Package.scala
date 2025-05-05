@@ -1,7 +1,6 @@
 import Matrices._
 import scala.collection.parallel.CollectionConverters._
 import org.scalameter._
-
 package object Benchmark {
   type AlgoritmoMult = (Matriz, Matriz) => Matriz
 

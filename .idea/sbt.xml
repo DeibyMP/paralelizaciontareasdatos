@@ -11,9 +11,8 @@
             <option value="$PROJECT_DIR$/project" />
           </set>
         </option>
-        <option name="sbtVersion" value="1.10.11" />
-        <option name="separateProdAndTestSourcesIsExplicit" value="true" />
       </SbtProjectSettings>
     </option>
+    <option name="vmParameters" value="--enable-native-access=ALL-UNNAMED " />
   </component>
 </project>

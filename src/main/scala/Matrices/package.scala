@@ -1,6 +1,5 @@
 import common._
 import scala.util.Random
-import scala.collection.parallel.CollectionConverters._
 import scala.collection.parallel.immutable.ParVector
 
 package object Matrices {
@@ -218,32 +217,48 @@ package object Matrices {
       val b21 = subMatriz(m2, l, 0, l)
       val b22 = subMatriz(m2, l, l, l)
 
-      // Paso 1: Calcular las matrices S en paralelo
-      val (s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) = parallel(
+      // Paso 1: Calcular las matrices S en paralelo (dividido en grupos)
+      // Grupo 1 (4 matrices)
+      val (s1, s2, s3, s4) = parallel(
         restaMatriz(b12, b22),
         sumMatriz(a11, a12),
         sumMatriz(a21, a22),
-        restaMatriz(b21, b11),
+        restaMatriz(b21, b11)
+      )
+      // Grupo 2 (4 matrices)
+      val (s5, s6, s7, s8) = parallel(
         sumMatriz(a11, a22),
         sumMatriz(b11, b22),
         restaMatriz(a12, a22),
-        sumMatriz(b21, b22),
+        sumMatriz(b21, b22)
+      )
+      // Grupo 3 (2 matrices)
+      val (s9, s10) = parallel(
         restaMatriz(a11, a21),
         sumMatriz(b11, b12)
       )
 
-      // Paso 2: Calcular las matrices P en paralelo
-      val (p1, p2, p3, p4, p5, p6, p7) = parallel(
+      // Paso 2: Calcular las matrices P en paralelo (dividido en grupos)
+      // Grupo 1 (4 matrices)
+      val (p1, p2, p3, p4) = parallel(
         multStrassenPar(a11, s1),
         multStrassenPar(s2, b22),
         multStrassenPar(s3, b11),
-        multStrassenPar(a22, s4),
-        multStrassenPar(s5, s6),
-        multStrassenPar(s7, s8),
-        multStrassenPar(s9, s10)
+        multStrassenPar(a22, s4)
       )
+      // Grupo 2 (3 matrices) - Solución para el problema específico
+      val (p5, p6, p7) = {
+        val (p5p6, p7dummy) = parallel(
+          parallel(
+            multStrassenPar(s5, s6),
+            multStrassenPar(s7, s8)
+          ),
+          multStrassenPar(s9, s10)
+        )
+        (p5p6._1, p5p6._2, p7dummy)
+      }
 
-      // Paso 3: Calcular las submatrices de C en paralelo
+      // Paso 3: Calcular las submatrices de C en paralelo (4 matrices)
       val (c11, c12, c21, c22) = parallel(
         sumMatriz(restaMatriz(sumMatriz(p5, p4), p2), p6),
         sumMatriz(p1, p2),
